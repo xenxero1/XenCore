@@ -93,7 +93,7 @@ public class NeoCore extends JavaPlugin implements Listener {
 	private static String welcome;
 	
 	public static Random gen = new Random();
-	
+	@Override
 	public void onEnable() {
 		inst = this;
 		mini = MiniMessage.miniMessage();
@@ -103,8 +103,15 @@ public class NeoCore extends JavaPlugin implements Listener {
 		if (instancecfg.exists()) {
 			YamlConfiguration icfg = YamlConfiguration.loadConfiguration(instancecfg);
 			instKey = icfg.getString("key");
-			instDisplay = mini.deserialize(icfg.getString("display"));
-			instType = InstanceType.valueOf(icfg.getString("type").toUpperCase());
+			String displayString = icfg.getString("display");
+			instDisplay = displayString != null ? MiniMessage.miniMessage().deserialize(displayString) : null;
+			String type = icfg.getString("type");
+			if (type != null && !type.isEmpty()) {
+				instType = InstanceType.valueOf(type.toUpperCase());
+			} else {
+				org.bukkit.Bukkit.getServer().getLogger().info("NeoCore Disabled");
+				org.bukkit.Bukkit.getServer().getPluginManager().disablePlugin(this);
+				return;	}
 		}
 		
 		// economy
@@ -117,11 +124,13 @@ public class NeoCore extends JavaPlugin implements Listener {
 
 		// Config
 		Config cfg = Config.load(new File(this.getDataFolder(), "config.yml"));
+		if (cfg != null) {
 		SQLManager.load(cfg.getSection("sql"));
 		Section gen = cfg.getSection("general");
 		if (gen != null) {
 			welcome = gen.getString("welcome", "<dark_red>[<red><bold>MLMC</red></bold>] <gray>Welcome <yellow>%player%</yellow>to MLMC!");
 		}
+	}
         
         // Main listener
         getServer().getPluginManager().registerEvents(this, this);
@@ -167,10 +176,8 @@ public class NeoCore extends JavaPlugin implements Listener {
 		SchedulerAPI.initialize();
 		
 		// Autosave
-		SchedulerAPI.scheduleRepeating("NeoCore-Autosave", ScheduleInterval.FIFTEEN_MINUTES, new Runnable() {
-			public void run() {
-				PlayerIOManager.autosave();
-			}
+		SchedulerAPI.scheduleRepeating("NeoCore-Autosave", ScheduleInterval.FIFTEEN_MINUTES, () -> {
+   			PlayerIOManager.autosave();
 		});
 		
 		// Outside compatibilities
@@ -235,6 +242,7 @@ public class NeoCore extends JavaPlugin implements Listener {
 		GradientManager.load(Config.load(new File(NeoCore.inst().getDataFolder(), "gradients.yml")));
 	}
 	
+	@Override
 	public void onDisable() {
 		PlayerIOManager.handleDisable();
 	    org.bukkit.Bukkit.getServer().getLogger().info("NeoCore Disabled");
@@ -272,7 +280,7 @@ public class NeoCore extends JavaPlugin implements Listener {
 	
 	public static void loadFiles(File load, FileLoader loader) {
 		if (!load.exists()) {
-			Bukkit.getLogger().warning("[NeoCore] Failed to load file " + load.getPath() + ", file doesn't exist");
+			Bukkit.getLogger().warning(String.format("[NeoCore] Failed to load file %s, file doesn't exist", load.getPath()));
 			return;
 		}
 		
@@ -348,6 +356,7 @@ public class NeoCore extends JavaPlugin implements Listener {
 	public void onJoin(PlayerJoinEvent e) {
 		if (instType == InstanceType.HUB && !e.getPlayer().hasPlayedBefore()) {
 			new BukkitRunnable() {
+				@Override
 				public void run() {
 					BungeeAPI.broadcast(welcome.replaceAll("%player%", e.getPlayer().getName()));
 				}
