@@ -19,8 +19,38 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.neoblade298.neocore.bukkit.bar.BarAPI;
 import me.neoblade298.neocore.bukkit.bungee.BungeeAPI;
 import me.neoblade298.neocore.bukkit.chat.ChatResponseHandler;
-import me.neoblade298.neocore.bukkit.commands.*;
-import me.neoblade298.neocore.bukkit.commands.builtin.*;
+import me.neoblade298.neocore.bukkit.commands.SubcommandManager;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdBCoreBroadcast;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdBCoreCmd;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdBCoreMutableBroadcast;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdBCoreSend;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdBCoreSilentMutableBroadcast;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreAddTag;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreBroadcast;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreCommandSet;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreDebug;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreHasField;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreHasTag;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreMessage;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCorePlayerMessage;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreRawMessage;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreReload;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreRemoveTag;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreResetField;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreSchedule;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreSendMessage;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreSetField;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdCoreTitle;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdFix;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdIODebug;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdIODisable;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdIODisabled;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdIOEnable;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdIOList;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdNBTGet;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdNBTKeys;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdNBTSet;
+import me.neoblade298.neocore.bukkit.commands.builtin.CmdRename;
 import me.neoblade298.neocore.bukkit.commandsets.CommandSetManager;
 import me.neoblade298.neocore.bukkit.io.FileLoader;
 import me.neoblade298.neocore.bukkit.io.IOComponent;
@@ -31,7 +61,9 @@ import me.neoblade298.neocore.bukkit.listeners.BungeeListener;
 import me.neoblade298.neocore.bukkit.listeners.EssentialsListener;
 import me.neoblade298.neocore.bukkit.listeners.InventoryListener;
 import me.neoblade298.neocore.bukkit.listeners.MainListener;
-import me.neoblade298.neocore.bukkit.player.*;
+import me.neoblade298.neocore.bukkit.player.PlayerDataManager;
+import me.neoblade298.neocore.bukkit.player.PlayerFields;
+import me.neoblade298.neocore.bukkit.player.PlayerTags;
 import me.neoblade298.neocore.bukkit.scheduler.ScheduleInterval;
 import me.neoblade298.neocore.bukkit.scheduler.SchedulerAPI;
 import me.neoblade298.neocore.bukkit.teleport.TeleportAPI;
@@ -88,7 +120,7 @@ public class NeoCore extends JavaPlugin implements Listener {
 		SQLManager.load(cfg.getSection("sql"));
 		Section gen = cfg.getSection("general");
 		if (gen != null) {
-			welcome = gen.getString("welcome", "&4[&c&lMLMC&4] &7Welcome &e%player% &7to MLMC!");
+			welcome = gen.getString("welcome", "<dark_red>[<red><bold>MLMC</red></bold>] <gray>Welcome <yellow>%player%</yellow>to MLMC!");
 		}
         
         // Main listener
@@ -127,7 +159,7 @@ public class NeoCore extends JavaPlugin implements Listener {
         CommandSetManager.reload();
         
         // Gradients
-        GradientManager.load(Config.load(new File("/home/MLMC/Resources/shared/NeoCore/gradients.yml")));
+        GradientManager.load(Config.load(new File(NeoCore.inst().getDataFolder(), "gradients.yml")));
         
         // messaging
 		MiniMessageManager.reloadBukkit();
@@ -200,7 +232,7 @@ public class NeoCore extends JavaPlugin implements Listener {
 	public static void reload() {
 		MiniMessageManager.reloadBukkit();
 		CommandSetManager.reload();
-        GradientManager.load(Config.load(new File("/home/MLMC/Resources/shared/NeoCore/gradients.yml")));
+		GradientManager.load(Config.load(new File(NeoCore.inst().getDataFolder(), "gradients.yml")));
 	}
 	
 	public void onDisable() {

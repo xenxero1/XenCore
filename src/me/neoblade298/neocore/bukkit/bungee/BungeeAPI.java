@@ -15,6 +15,12 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 
+/*
+ * Currently broken, velocity's pluginmessage seems less out-of-box
+ * Need to set up a server->velocity API and make velocity auto-forward
+ * it to servers.
+ * Before bungee auto-forwarded everything out of box.
+ */
 public class BungeeAPI {
 	private static Component prefix;
 	
@@ -24,6 +30,7 @@ public class BungeeAPI {
 				.append(Component.text("]", NamedTextColor.RED));
 	}
 	
+	@SuppressWarnings("null")
 	public static void broadcast(String msg) {
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		out.writeUTF("MessageRaw");
@@ -81,6 +88,7 @@ public class BungeeAPI {
 		sendBungeeMessage(out);
 	}
 	
+	@SuppressWarnings("null")
 	public static void sendBungeeMessage(String[] msgs) {
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		out.writeUTF("NeoCore");

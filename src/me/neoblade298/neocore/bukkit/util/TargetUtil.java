@@ -20,22 +20,26 @@ import org.bukkit.util.Vector;
 public class TargetUtil {
 
 	public static Location getSightLocation(LivingEntity source, double range, boolean stickToGround) {
-		Location start = source.getEyeLocation();
-		Vector v = start.getDirection();
-		Location end = start.add(v.multiply(range));
+		return getSightLocation(source.getEyeLocation(), source.getEyeLocation().getDirection(), range, stickToGround);
+	}
+
+	public static Location getSightLocation(Location source, Vector direction, double range, boolean stickToGround) {
+		Location start = source;
+		Location end = start.clone().add(direction.multiply(range));
 		Block b = end.getBlock();
 		
-		RayTraceResult rtr = start.getWorld().rayTraceBlocks(start, v, range, FluidCollisionMode.NEVER, true);
+		RayTraceResult rtr = start.getWorld().rayTraceBlocks(start, direction, range, FluidCollisionMode.NEVER, true);
 
 		/* 1. No stick to ground, hit block: subtract eye direction from the block hit
 		 * 2. No stick to ground, air: Do nothing
 		 * 3. Stick to ground: Get either the air or raytraced block and find the ground from there
 		 */
-		if (rtr.getHitBlock() != null) {
+		if (rtr != null && rtr.getHitBlock() != null) {
 			b = rtr.getHitBlock();
 			if (!stickToGround) {
-				return b.getLocation().subtract(v);
+				return b.getLocation().subtract(direction);
 			}
+			end = b.getLocation();
 		}
 		
 		if (stickToGround) {
@@ -45,21 +49,29 @@ public class TargetUtil {
 	}
 	
 	public static LinkedList<LivingEntity> getEntitiesInRadius(Entity source, double range) {
-		return getEntitiesInRadius(source.getLocation(), range, null);
-	}
-	
-	public static LinkedList<LivingEntity> getEntitiesInRadius(Location source, double range) {
-		return getEntitiesInRadius(source, range, null);
+		return getEntitiesInRadius(source.getLocation(), range, range, null);
 	}
 	
 	public static LinkedList<LivingEntity> getEntitiesInRadius(Entity source, double range, Predicate<LivingEntity> filter) {
-		return getEntitiesInRadius(source.getLocation(), range, filter);
+		return getEntitiesInRadius(source.getLocation(), range, range, filter);
+	}
+	
+	public static LinkedList<LivingEntity> getEntitiesInRadius(Location source, double range) {
+		return getEntitiesInRadius(source, range, range, null);
+	}
+	
+	public static LinkedList<LivingEntity> getEntitiesInRadius(Location source, double range, Predicate<LivingEntity> filter) {
+		return getEntitiesInRadius(source, range, range, filter);
+	}
+	
+	public static LinkedList<LivingEntity> getEntitiesInRadius(Location source, double radius, double height) {
+		return getEntitiesInRadius(source, radius, height, null);
 	}
 
 	// Gets all entities around source
 	// Sorted by nearest to furthest
-	public static LinkedList<LivingEntity> getEntitiesInRadius(Location source, double radius, Predicate<LivingEntity> filter) {
-		Collection<Entity> nearby = source.getNearbyEntities(radius, radius, radius);
+	public static LinkedList<LivingEntity> getEntitiesInRadius(Location source, double radius, double height, Predicate<LivingEntity> filter) {
+		Collection<Entity> nearby = source.getNearbyEntities(radius, height, radius);
 		TreeSet<DistanceObject<LivingEntity>> sorted = new TreeSet<DistanceObject<LivingEntity>>();
 
 		for (Entity entity : nearby) {
@@ -80,23 +92,29 @@ public class TargetUtil {
 	}
 	
 	public static LinkedList<LivingEntity> getEntitiesInSight(LivingEntity source, double range, double tolerance) {
-		return getEntitiesInSight(source, range, tolerance, null);
+		return getEntitiesInLine(source.getLocation(), source.getEyeLocation().getDirection(), range, tolerance, null);
+	}
+	
+	public static LinkedList<LivingEntity> getEntitiesInSight(LivingEntity source, double range, double tolerance, Predicate<LivingEntity> filter) {
+		return getEntitiesInLine(source.getLocation(), source.getEyeLocation().getDirection(), range, tolerance, filter);
 	}
 
+	public static LinkedList<LivingEntity> getEntitiesInLine(Location source, Vector direction, double range, double tolerance) {
+		return getEntitiesInLine(source, direction, range, tolerance, null);
+	}
+	
 	// Gets all entities in a line in front of source
 	// Sorted by nearest to furthest
-	public static LinkedList<LivingEntity> getEntitiesInSight(LivingEntity source, double range, double tolerance, Predicate<LivingEntity> filter) {
-		List<Entity> nearby = source.getNearbyEntities(range, range, range);
+	public static LinkedList<LivingEntity> getEntitiesInLine(Location source, Vector direction, double range, double tolerance, Predicate<LivingEntity> filter) {
+		Collection<Entity> nearby = source.getNearbyEntities(range, range, range);
 		TreeSet<DistanceObject<LivingEntity>> sorted = new TreeSet<DistanceObject<LivingEntity>>();
-
-		Vector facing = source.getLocation().getDirection();
-		double fLengthSq = facing.lengthSquared();
+		double fLengthSq = direction.lengthSquared();
 
 		for (Entity entity : nearby) {
-			if (!isInFront(source, entity) || !(entity instanceof LivingEntity)) continue;
+			if (!isInFront(source, entity.getLocation(), direction) || !(entity instanceof LivingEntity)) continue;
 			LivingEntity le = (LivingEntity) entity;
-			Vector relative = entity.getLocation().subtract(source.getLocation()).toVector();
-			double dot = relative.dot(facing);
+			Vector relative = entity.getLocation().subtract(source).toVector();
+			double dot = relative.dot(direction);
 			double rLengthSq = relative.lengthSquared();
 			double cosSquared = (dot * dot) / (rLengthSq * fLengthSq);
 			double sinSquared = 1 - cosSquared;
@@ -115,14 +133,21 @@ public class TargetUtil {
 		return getEntitiesInCone(source, arc, range, null);
 	}
 
+	public static LinkedList<LivingEntity> getEntitiesInCone(LivingEntity source, Location loc, Vector direction, double arc, double range) {
+		return getEntitiesInCone(source, loc, direction, arc, range, null);
+	}
+
 	public static LinkedList<LivingEntity> getEntitiesInCone(LivingEntity source, double arc, double range, Predicate<LivingEntity> filter) {
+		return getEntitiesInCone(source, source.getLocation(), source.getEyeLocation().getDirection(), arc, range, filter);
+	}
+
+	public static LinkedList<LivingEntity> getEntitiesInCone(LivingEntity source, Location loc, Vector direction, double arc, double range, Predicate<LivingEntity> filter) {
 		LinkedList<LivingEntity> targets = new LinkedList<LivingEntity>();
-		List<Entity> list = source.getNearbyEntities(range, range, range);
+		Collection<Entity> list = loc.getNearbyEntities(range, range, range);
 		if (arc <= 0) return targets;
 
 		// Initialize values
-		Vector dir = source.getLocation().getDirection();
-		dir.setY(0);
+		direction.setY(0);
 		double cos = Math.cos(arc * Math.PI / 180);
 		double cosSq = cos * cos;
 
@@ -139,7 +164,7 @@ public class TargetUtil {
 				else {
 					Vector relative = entity.getLocation().subtract(source.getLocation()).toVector();
 					relative.setY(0);
-					double dot = relative.dot(dir);
+					double dot = relative.dot(direction);
 					double value = dot * dot / relative.lengthSquared();
 					if (arc < 180 && dot > 0 && value >= cosSq)
 						targets.add((LivingEntity) entity);
@@ -150,14 +175,17 @@ public class TargetUtil {
 		if (filter != null) return targets.stream().filter(filter).collect(Collectors.toCollection(LinkedList::new));
 		return targets;
 	}
+	
+	public static boolean isInFront(Location source, Location target) {
+		return isInFront(source, target, source.getDirection());
+	}
 
-	public static boolean isInFront(Entity entity, Entity target) {
+	public static boolean isInFront(Location source, Location target, Vector direction) {
 		// Get the necessary vectors
-		Vector facing = entity.getLocation().getDirection();
-		Vector relative = target.getLocation().subtract(entity.getLocation()).toVector();
+		Vector relative = target.subtract(source).toVector();
 
 		// If the dot product is positive, the target is in front
-		return facing.dot(relative) >= 0;
+		return direction.dot(relative) >= 0;
 	}
 	
 	private static class DistanceObject<E> implements Comparable<DistanceObject<E>> {
@@ -180,7 +208,7 @@ public class TargetUtil {
 	}
 	
 	private static double findGroundY(Block b) {
-		while (b.isEmpty()) {
+		while (b.isEmpty() && b.getY() > -64) {
 			b = b.getRelative(BlockFace.DOWN);
 		}
 		return b.getY() + 0.5;

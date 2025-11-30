@@ -39,7 +39,7 @@ public abstract class CoreInventory {
 	}
 	
 	public static ItemStack createButton(String b64, TextComponent name, TextComponent... lore) {
-		ItemStack item = SkullUtil.itemFromBase64(b64);
+		ItemStack item = SkullUtil.fromBase64(b64);
 		return createButton(item, name, lore);
 	}
 	
@@ -81,7 +81,9 @@ public abstract class CoreInventory {
 	}
 	
 	public void openInventory() {
+		CorePlayerInventory lower = InventoryListener.getLowerInventory(p);
 		p.openInventory(inv);
 		InventoryListener.registerInventory(p, this);
+		if (lower != null) InventoryListener.registerPlayerInventory(p, lower);
 	}
 }

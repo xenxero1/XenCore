@@ -37,6 +37,9 @@ public class BungeeListener implements PluginMessageListener, Listener {
 		case "mutablebc":
 			handleMutableBroadcast(in.readUTF(), in.readUTF());
 			break;
+		case "neocore-afk":
+			handleAfkBroadcast(in.readUTF(), in.readUTF().equals("T"));
+			break;
 		default:
 			ArrayList<String> msgs = new ArrayList<String>();
 			try {
@@ -49,6 +52,10 @@ public class BungeeListener implements PluginMessageListener, Listener {
 			Bukkit.getPluginManager().callEvent(new PluginMessageEvent(subchannel, msgs));
 			break;
 		}
+	}
+	
+	private void handleAfkBroadcast(String name, boolean isAfk) {
+		Util.broadcast("<gray>* " + name + (isAfk ? " is now AFK" : " is no longer AFK"), false);
 	}
 	
 	private void handleTeleportInstant(UUID src, UUID trg) {

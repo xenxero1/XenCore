@@ -7,9 +7,8 @@ import me.neoblade298.neocore.bukkit.bungee.BungeeAPI;
 import net.ess3.api.events.AfkStatusChangeEvent;
 
 public class EssentialsListener implements Listener {
-	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onAfkChange(AfkStatusChangeEvent e) {
-		BungeeAPI.broadcast("<gray>* " + e.getAffected().getName() + (e.getValue() ? " is now AFK" : " is no longer AFK"));
+		BungeeAPI.sendPluginMessage("neocore-afk", new String[] {e.getAffected().getName(), e.getValue() ? (String) "T" : "F"});
 	}
 }

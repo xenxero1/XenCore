@@ -26,7 +26,7 @@ public class CmdBCoreBroadcast extends Subcommand {
 		}
 		else {
 			// Send msg
-			BungeeAPI.broadcast("&4[&c&lMLMC&4] &7" + SharedUtil.connectArgs(args));
+			BungeeAPI.broadcast("<dark_red>[<red><bold>MLMC</bold</red>] <gray>" + SharedUtil.connectArgs(args));
 		}
 	}
 }

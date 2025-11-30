@@ -71,7 +71,7 @@ public class CommandArguments {
 	public static Arg getCurrentArg(String[] args, CommandArguments cargs) {
 		// Args only start after 1, since args are for subcommands and the subcommand is
 		// args[0]
-		if (args.length < 1) return null;
+		if (args.length < 2) return null;
 		if (cargs.size() == 0) return null;
 		if (args.length - 1 > cargs.size()) return null;
 

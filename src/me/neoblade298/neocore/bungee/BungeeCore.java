@@ -18,19 +18,27 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
-import com.velocitypowered.api.plugin.Plugin;
-import com.velocitypowered.api.plugin.annotation.DataDirectory;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent.Builder;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import me.neoblade298.neocore.bukkit.NeoCore;
 import me.neoblade298.neocore.bungee.chat.ChatResponseHandler;
-import me.neoblade298.neocore.bungee.commands.builtin.*;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdBroadcast;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdHub;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdKickAll;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdMotd;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdMutableBroadcast;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdSend;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdSendAll;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdSilentBroadcast;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdSilentMutableBroadcast;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdTp;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdTphere;
+import me.neoblade298.neocore.bungee.commands.builtin.CmdUptime;
 import me.neoblade298.neocore.bungee.io.FileLoader;
 import me.neoblade298.neocore.bungee.listeners.ChatListener;
 import me.neoblade298.neocore.bungee.listeners.MainListener;
@@ -39,6 +47,10 @@ import me.neoblade298.neocore.shared.chat.MiniMessageManager;
 import me.neoblade298.neocore.shared.io.Config;
 import me.neoblade298.neocore.shared.io.SQLManager;
 import me.neoblade298.neocore.shared.util.GradientManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent.Builder;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
 @Plugin(id = "neocore", name = "NeoCore", version = "0.1.0-SNAPSHOT",
         url = "https://ml-mc.com", description = "Neo's core plugin for his suite of plugins", authors = {"Ascheladd"})
@@ -81,12 +93,14 @@ public class BungeeCore {
         mngr.register(CmdTphere.meta(mngr, this), new CmdTphere());
         mngr.register(CmdUptime.meta(mngr, this), new CmdUptime());
         mngr.register(CmdSendAll.meta(mngr, this), new CmdSendAll());
+        mngr.register(CmdSend.meta(mngr, this), new CmdSend());
         mngr.register(CmdKickAll.meta(mngr, this), new CmdKickAll());
         proxy.getEventManager().register(this, new MainListener());
         proxy.getEventManager().register(this, new ChatListener());
         proxy.getChannelRegistrar().register(IDENTIFIER);
         
-        GradientManager.load(Config.load(new File("/home/MLMC/Resources/shared/NeoCore/gradients.yml")));
+		// Maybe doesn't work as of non-bungification
+        GradientManager.load(Config.load(new File(NeoCore.inst().getDataFolder(), "gradients.yml")));
 
 		Config cfg = Config.load(new File(folder, "config.yml"));
         // sql

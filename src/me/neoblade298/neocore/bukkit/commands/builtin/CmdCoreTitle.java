@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import me.neoblade298.neocore.bukkit.NeoCore;
 import me.neoblade298.neocore.bukkit.commands.Subcommand;
+import me.neoblade298.neocore.shared.commands.Arg;
 import me.neoblade298.neocore.shared.commands.SubcommandRunner;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
@@ -17,6 +18,9 @@ public class CmdCoreTitle extends Subcommand {
 
 	public CmdCoreTitle(String key, String desc, String perm, SubcommandRunner runner) {
 		super(key, desc, perm, runner);
+		args.add(new Arg("player"));
+		args.setOverride("[player] {--title x} {--subtitle y} {--in a} {--stay b} {--out c} ");
+		args.setMin(1);
 	}
 	
 	@Override

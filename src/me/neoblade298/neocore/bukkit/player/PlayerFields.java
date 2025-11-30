@@ -253,6 +253,11 @@ public class PlayerFields {
 			e.printStackTrace();
 			return false;
 		}
+
+		if (value == null) {
+			Bukkit.getLogger().log(Level.WARNING, "[NeoCore] Failed to change field " + this.getKey() + "." + key + " for " + uuid + ". Value failed to parse and was null.");
+			return false;
+		}
 		
 		if (value.equals(defaults.get(key))) {
 			return resetField(key, uuid);

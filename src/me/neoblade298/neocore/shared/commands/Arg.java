@@ -1,5 +1,6 @@
 package me.neoblade298.neocore.shared.commands;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.entity.Player;
@@ -39,6 +40,7 @@ public class Arg {
 	
 	public Arg setTabOptions(List<String> tabOptions) {
 		this.tabOptions = tabOptions;
+		Collections.sort(this.tabOptions);
 		return this;
 	}
 	

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.bukkit.Bukkit;
+
 import me.neoblade298.neocore.bukkit.NeoCore;
 import me.neoblade298.neocore.shared.io.Section;
 
@@ -38,6 +40,10 @@ public class CommandSet {
 		while (gen >= 0 && iter.hasNext()) {
 			e = iter.next();
 			gen -= e.getWeight();
+		}
+		if (e == null) {
+			Bukkit.getLogger().warning("[NeoCore] Failed to run command set " + key + " due to no entries.");
+			return;
 		}
 		e.run(variables, args);
 	}
